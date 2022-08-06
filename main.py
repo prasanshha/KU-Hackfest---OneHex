@@ -208,10 +208,6 @@ class Asl:
                 if timer == 0:
                     break
 
-            cap.release()
-            cv2.destroyAllWindows()
-
-            cap = cv2.VideoCapture(0)
 
             for sequence in range(self.no_sequences):
                 for frame_num in range(self.sequence_length):
@@ -243,9 +239,12 @@ class Asl:
                     )
                     np.save(npy_path, keypoints)
 
+                    if cv2.waitKey(10) & 0xFF == ord('q'):
+                        break
+
                 timer = 2
                 while True:
-                    image = np.zeros((width, height))
+                    ret, image = cap.read()
                     cv2.putText(
                         image,
                         f"Next Frame in {timer} second",
@@ -369,4 +368,4 @@ class Asl:
 
 
 asl = Asl()
-asl.record()
+asl.run()
