@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 
 def query(q):
+    print(q)
     URL = f"https://www.google.com/search?q={q}&hl=en"
 
     header = {
@@ -11,26 +12,31 @@ def query(q):
 
     page = requests.get(URL, headers=header)
     soup = BeautifulSoup(page.content, 'html.parser')
+    response = ""
     if "weather" in q:
         result = soup.find(class_ = 'wob_t q8U8x').get_text()
-        print("It is "+result+" degree celcius.")
+        response = "It is "+result+" degree celcius."
     elif "flip" in q:
         result = soup.find(class_ = 'PmF7Ce').get_text()
-        print("You got "+result+"!")
+        response = "You got "+result+"!"
     else:
         result = soup.find(class_ = 'vk_bk dDoNo FzvWSb').get_text()
-        print(result)
+        response = result
+
+    return response
 
 
-while True:
-    try:
-        q = input("Ask me sth: ")
-        query(q)
-    except Exception:
-        print("Sorry, I didn't get that.")
-    user_input = input("Press y to continue: ")
-    if user_input != 'y':
-        break
+
+
+# while True:
+#     try:
+#         q = input("Ask me sth: ")
+#         query(q)
+#     except Exception:
+#         print("Sorry, I didn't get that.")
+#     user_input = input("Press y to continue: ")
+#     if user_input != 'y':
+#         break
 
 # QUERIES:
 # whats the date tomorrow

@@ -1,4 +1,5 @@
 import cv2
+import time
 import os
 import mediapipe as mp
 import numpy as np
@@ -10,6 +11,8 @@ from tensorflow.keras.layers import LSTM, Dense
 from tensorflow.keras.callbacks import TensorBoard
 from sklearn.metrics import multilabel_confusion_matrix, accuracy_score
 
+
+from returnquery import query
 
 class Asl:
     def __init__(self):
@@ -384,6 +387,8 @@ class Asl:
         sentence = []
         threshold = 0.8
 
+        s_time = 0
+
         with self.mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5)  as holistic:
             while cap.isOpened():
 
@@ -414,20 +419,45 @@ class Asl:
                         if len(sentence) > 0: 
                             if self.actions[np.argmax(res)] != sentence[-1]:
                                 sentence.append(self.actions[np.argmax(res)])
+                                if (self.actions[np.argmax(res)] != "-"):
+                                    s_time = time.time()
                         else:
                             sentence.append(self.actions[np.argmax(res)])
 
                     if len(sentence) > 5: 
                         sentence = sentence[-5:]
 
+
+                    if (s_time != 0):
+
+                        print(time.time() - s_time)
+
+                        if (time.time() - s_time > 3):
+
+                            if len(sentence) > 0:
+                                q = " ".join(sentence).replace("-", "")
+
+                                if (q.strip() != ""):
+
+                                
+                                    try:
+                                        response = query(q)
+                                    except Exception:
+                                        response = "Nothing"
+                                    s_time = time.time()
+                                    sentence = []
+
+                                    print(response)
+                        
+                            
                     # Viz probabilities
                     # image = prob_viz(res, actions, image, colors)
                     
                 cv2.rectangle(image, (0,0), (640, 40), (245, 117, 16), -1)
-                cv2.putText(image, text, (3,30), 
+                cv2.putText(image, " ".join(sentence).replace("-", ""), (3,30), 
                             cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
             
-                cv2.imshow("OpenCv", image)
+                cv2.imshow(self.window_name, image)
 
                 if cv2.waitKey(10) & 0xFF == ord('q'):
                     break
