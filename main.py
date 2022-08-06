@@ -113,7 +113,7 @@ class Asl:
         return np.concatenate([pose, face, lh, rh])
 
     def find_last_index(self, links):
-        high = None
+        high = -1
         for key, value in links.items():
             phrase, index = value
             if index > high:
@@ -140,7 +140,7 @@ class Asl:
 
         index = self.find_last_index(link)
 
-        if index == None:
+        if index == -1:
             index = 0
         else:
             index += 1
