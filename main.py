@@ -14,6 +14,35 @@ from sklearn.metrics import multilabel_confusion_matrix, accuracy_score
 
 from returnquery import query
 
+import pygame, pygame.font, pygame.event, pygame.draw, string
+from pygame.locals import *
+
+
+def display_box(screen, message):
+    fontobject=pygame.font.SysFont('Arial', 22)
+    if len(message) != 0:
+        screen.blit(fontobject.render(message, 1, (255, 255, 255)),
+                (10, (screen.get_height() / 2) - 10))
+    pygame.display.flip()
+
+
+def showText(text):
+        # Graphics initialization
+    full_screen = False    
+    window_size = (1024, 200)
+    pygame.init()      
+    if full_screen:
+        surf = pygame.display.set_mode(window_size, HWSURFACE | FULLSCREEN | DOUBLEBUF)
+    else:
+        surf = pygame.display.set_mode(window_size)
+
+    # Create a display box
+    display_box(surf, text)
+    time.sleep(5)
+    pygame.display.quit()
+
+    pygame.quit()
+
 class Asl:
     def __init__(self):
         self.mp_holistic = mp.solutions.holistic
@@ -438,16 +467,30 @@ class Asl:
                                 q = " ".join(sentence).replace("-", "")
 
                                 if (q.strip() != ""):
+                                    
+                                    cv2.putText(
+                                        image,
+                                        "Searching....",
+                                        (120, 120),
+                                        cv2.FONT_HERSHEY_SIMPLEX,
+                                        1,
+                                        (0, 255, 0),
+                                        4,
+                                        cv2.LINE_AA,
+                                    )
+                                    cv2.imshow(self.window_name, image)
+                                    cv2.waitKey(10)
 
-                                
                                     try:
+                                        
                                         response = query(q)
                                     except Exception:
-                                        response = "Nothing"
-                                    s_time = time.time()
+                                        response = "I couldn't find any results."
                                     sentence = []
 
                                     print(response)
+                                    showText(response)
+                                    s_time = time.time()
                         
                             
                     # Viz probabilities
