@@ -16,7 +16,7 @@ class Asl:
         self.mp_holistic = mp.solutions.holistic
         self.mp_drawing = mp.solutions.drawing_utils
         self.no_sequences = 30
-        self.sequence_length = 60
+        self.sequence_length = 30
         self.DATA_PATH = os.path.join("MP_DATA")
         self.link_file_path = os.path.join(self.DATA_PATH, "link.json")
         self.window_name = "ASL"
