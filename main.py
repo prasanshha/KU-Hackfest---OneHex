@@ -22,6 +22,7 @@ class Asl:
         self.window_name = "ASL"
         self.label_map = {}
         self.actions = []
+        self.model = None
 
     def mediapipe_detection(self, image, model):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -265,8 +266,10 @@ class Asl:
             cap.release()
             cv2.destroyAllWindows()
 
-    def pre_process(self):
+
+    def load_data(self):
         self.label_map = {}
+        self.phrase_link = {}
 
         self.actions = []
 
@@ -274,8 +277,14 @@ class Asl:
             links = json.loads(f.read())
 
             for phrase_folder, values in links.items():
-                self.label_map[values[1]] = values[0]
+                self.label_map[values[0]] = values[1]
                 self.actions.append(values[0])
+                self.phrase_link[values[0]] = phrase_folder
+
+        self.actions = np.array(self.actions)
+
+    def pre_process(self):
+        self.load_data()
 
         sequences, labels = [], []
         for action in self.actions:
@@ -284,7 +293,7 @@ class Asl:
                 for frame_num in range(self.sequence_length):
                     res = np.load(
                         os.path.join(
-                            self.DATA_PATH, action, str(sequence), f"{frame_num}.npy"
+                            self.DATA_PATH, self.phrase_link[action], str(sequence), f"{frame_num}.npy"
                         )
                     )
                     window.append(res)
@@ -326,29 +335,42 @@ class Asl:
         tb_callback = TensorBoard(log_dir=log_dir)
 
         model = self.get_model()
-        model.fit(X_train, y_train, epochs=2000, callbacks=[tb_callback])
+        try:
+            model.fit(X_train, y_train, epochs=2000, callbacks=[tb_callback])
+        except KeyboardInterrupt as e:
+            pass
 
         print(model.summary())
 
         model.save("action.h5")
+        self.model = model
+
+        self.show_accuracy(model, X_test, y_test)
 
     def load_model(self):
+        self.load_data()
         model = self.get_model()
 
         model.load_weights("action.h5")
 
-        return model
+        self.model = model
 
     def show_accuracy(self, model, X_test, y_test):
         yhat = model.predict(X_test)
         ytrue = np.argmax(y_test, axis=1).tolist()
         yhat = np.argmax(yhat, axis=1).tolist()
         multilabel_confusion_matrix(ytrue, yhat)
-        print(accuracy_score(ytrue, yhat))
+        print("Accuracy Score: " + accuracy_score(ytrue, yhat))
 
     def display(self):
+        print("-" * 30)
+        print("info")
+        print(f"Model loaded = {self.model != None}")
+        print("-" * 30)
         print("1. Add a phrase")
         print("2. train")
+        print("3. load model")
+        # print("4. show accuracy")
         print("-" * 30)
 
     def run(self):
@@ -363,8 +385,11 @@ class Asl:
 
             elif int(option) == 2:
                 self.train()
-
+            
             elif int(option) == 3:
+                self.load_model()
+
+            elif int(option) == 5:
                 break
 
 
