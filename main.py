@@ -125,6 +125,11 @@ class Asl:
         # link folder name with phrase in json
         phrase_folder = phrase.replace(" ", "-")
 
+        try:
+            os.mkdir(self.DATA_PATH)
+        except:
+            pass
+
         link = {}
 
         try:
@@ -362,6 +367,68 @@ class Asl:
         multilabel_confusion_matrix(ytrue, yhat)
         print("Accuracy Score: " + accuracy_score(ytrue, yhat))
 
+
+    def predict(self):
+
+        self.load_data()
+
+        cap = cv2.VideoCapture(0)
+
+        sequence = []
+        sentence = []
+        threshold = 0.8
+
+        with self.mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5)  as holistic:
+            while cap.isOpened():
+
+                ret, frame = cap.read()
+                
+                # make detection
+                image, results = self.mediapipe_detection(frame, holistic)
+                
+
+                self.draw_landmarks(image, results)
+                
+                
+                # prediction login
+                keypoints = self.extract_keypoints(results)
+                sequence.append(keypoints)
+                sequence = sequence[-self.sequence_length:]
+
+                text = ""
+                
+                if len(sequence) == 30:
+                    res = self.model.predict(np.expand_dims(sequence, axis=0))[0 ]
+                    # print(actions[np.argmax(res)])
+                
+                
+                #3. Viz logic
+                    if res[np.argmax(res)] > threshold: 
+                        text = self.actions[np.argmax(res)]
+                        if len(sentence) > 0: 
+                            if self.actions[np.argmax(res)] != sentence[-1]:
+                                sentence.append(self.actions[np.argmax(res)])
+                        else:
+                            sentence.append(self.actions[np.argmax(res)])
+
+                    if len(sentence) > 5: 
+                        sentence = sentence[-5:]
+
+                    # Viz probabilities
+                    # image = prob_viz(res, actions, image, colors)
+                    
+                cv2.rectangle(image, (0,0), (640, 40), (245, 117, 16), -1)
+                cv2.putText(image, text, (3,30), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
+            
+                cv2.imshow("OpenCv", image)
+
+                if cv2.waitKey(10) & 0xFF == ord('q'):
+                    break
+
+            cap.release()
+            cv2.destroyAllWindows()
+
     def display(self):
         print("-" * 30)
         print("info")
@@ -370,7 +437,7 @@ class Asl:
         print("1. Add a phrase")
         print("2. train")
         print("3. load model")
-        # print("4. show accuracy")
+        print("4. predict")
         print("-" * 30)
 
     def run(self):
@@ -388,6 +455,9 @@ class Asl:
             
             elif int(option) == 3:
                 self.load_model()
+
+            elif int(option) == 4:
+                self.predict()
 
             elif int(option) == 5:
                 break
