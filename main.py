@@ -113,7 +113,7 @@ class Asl:
         return np.concatenate([pose, face, lh, rh])
 
     def find_last_index(self, links):
-        high = 0
+        high = None
         for key, value in links.items():
             phrase, index = value
             if index > high:
@@ -140,7 +140,12 @@ class Asl:
 
         index = self.find_last_index(link)
 
-        link[phrase_folder] = [phrase, index + 1]
+        if index == None:
+            index = 0
+        else:
+            index += 1
+
+        link[phrase_folder] = [phrase, index]
         json_string = json.dumps(link)
 
         with open(self.link_file_path, "w") as f:
@@ -365,7 +370,8 @@ class Asl:
         ytrue = np.argmax(y_test, axis=1).tolist()
         yhat = np.argmax(yhat, axis=1).tolist()
         multilabel_confusion_matrix(ytrue, yhat)
-        print("Accuracy Score: " + accuracy_score(ytrue, yhat))
+        print("Accuracy Score: ")
+        print(accuracy_score(ytrue, yhat))
 
 
     def predict(self):
