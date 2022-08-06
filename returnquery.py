@@ -15,13 +15,16 @@ def query(q):
     response = ""
     if "weather" in q:
         result = soup.find(class_ = 'wob_t q8U8x').get_text()
-        response = "It is "+result+" degree celcius."
+        response = "It will be "+result+" degree celcius."
     elif "flip" in q:
         result = soup.find(class_ = 'PmF7Ce').get_text()
         response = "You got "+result+"!"
-    else:
-        result = soup.find(class_ = 'vk_bk dDoNo FzvWSb').get_text()
+    elif "time" in q:
+        result = soup.find(class_ = 'gsrt vk_bk FzvWSb YwPhnf').get_text()
         response = result
+    else:
+        result = soup.find(class_ = 'LC20lb MBeuO DKV0Md').get_text()
+        response = "Here's what I found:\n"+result
 
     return response
 
@@ -39,6 +42,6 @@ def query(q):
 #         break
 
 # QUERIES:
-# whats the date tomorrow
+# whats the time now
 # flip a coin
-# whats the weather today
+# whats the weather tomorrow
