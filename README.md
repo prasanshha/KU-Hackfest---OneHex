@@ -23,7 +23,7 @@ python main.py
 ```
 
 
-Press 1 key to insert phrases
-Press 2 key to train the recorded phrases
-Press 3 key to load a model from action.h5 file
-Press 4 to start predicting
+Press 1 key to insert phrases <br>
+Press 2 key to train the recorded phrases <br>
+Press 3 key to load a model from action.h5 file <br>
+Press 4 to start predicting <br>
