@@ -9,9 +9,20 @@ An application that makes voice assistants accessible to people with hearing and
 ```
 python -m virtualenv env
 ```
+
+<hr/>
+
+#### For Mac/Linux
 ```
 source env/bin/activate
 ```
+#### For Windows
+```
+.\env\Scripts\activate.ps1
+```
+
+<hr/>
+
 ```
 pip install -r requirements.txt
 ```
