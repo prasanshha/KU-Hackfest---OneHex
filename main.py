@@ -408,12 +408,17 @@ class Asl:
 
     def predict(self):
 
+        if (self.model == None):
+            print("Load the model first")
+            return
+
         self.load_data()
 
         cap = cv2.VideoCapture(0)
 
         sequence = []
         sentence = []
+        predictions = []
         threshold = 0.8
 
         s_time = 0
@@ -438,20 +443,24 @@ class Asl:
                 text = ""
                 
                 if len(sequence) == 30:
-                    res = self.model.predict(np.expand_dims(sequence, axis=0))[0 ]
+                    res = self.model.predict(np.expand_dims(sequence, axis=0))[0]
+                    predictions.append(np.argmax(res))
                     # print(actions[np.argmax(res)])
                 
                 
                 #3. Viz logic
-                    if res[np.argmax(res)] > threshold: 
-                        text = self.actions[np.argmax(res)]
-                        if len(sentence) > 0: 
-                            if self.actions[np.argmax(res)] != sentence[-1]:
+                    if np.unique(predictions[-15:])[0] == np.argmax(res):
+                        if res[np.argmax(res)] > threshold: 
+                            text = self.actions[np.argmax(res)]
+                            if len(sentence) > 0: 
+                                if self.actions[np.argmax(res)] != sentence[-1]:
+                                    sentence.append(self.actions[np.argmax(res)])
+                                    if (self.actions[np.argmax(res)] != "-"):
+                                        s_time = time.time()
+                            else:
                                 sentence.append(self.actions[np.argmax(res)])
-                                if (self.actions[np.argmax(res)] != "-"):
-                                    s_time = time.time()
-                        else:
-                            sentence.append(self.actions[np.argmax(res)])
+
+                    print(predictions[-15:])
 
                     if len(sentence) > 5: 
                         sentence = sentence[-5:]
@@ -461,7 +470,7 @@ class Asl:
 
                         print(time.time() - s_time)
 
-                        if (time.time() - s_time > 3):
+                        if (time.time() - s_time > 5):
 
                             if len(sentence) > 0:
                                 q = " ".join(sentence).replace("-", "")
@@ -490,7 +499,9 @@ class Asl:
 
                                     print(response)
                                     showText(response)
-                                    s_time = time.time()
+                                    s_time = 0
+                                    sequence = []
+                                    predictions = []
                         
                             
                     # Viz probabilities
