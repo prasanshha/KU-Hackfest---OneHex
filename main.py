@@ -459,6 +459,8 @@ class Asl:
                                         s_time = time.time()
                             else:
                                 sentence.append(self.actions[np.argmax(res)])
+                                if (self.actions[np.argmax(res)] != "-"):
+                                    s_time = time.time()
 
                     print(predictions[-15:])
 
