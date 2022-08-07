@@ -5,7 +5,7 @@ An application that makes voice assistants accessible to people with hearing and
 
 ## To run the project
 
-### create a virtual environment and install requirements
+### Create a virtual environment and install requirements
 ```
 python -m virtualenv env
 ```
